@@ -72,7 +72,7 @@ const Hero = () => {
         >
           Hi, I am{' '}
           <span className="bg-clip-text text-transparent bg-gradient-to-r from-cyan-500 to-blue-600 dark:from-cyan-400 dark:via-blue-500 dark:to-indigo-500">
-            <TypewriterText text="P Sreyanshu Anupam" />
+            <TypewriterText text="Sreyanshu" />
           </span>
         </motion.h1>
 

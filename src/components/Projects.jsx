@@ -9,7 +9,7 @@ const Projects = () => {
       image: 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=800&q=80',
       tags: ['Python', 'Pandas', 'Scikit-learn', 'Flask', 'HTML/CSS'],
       github: 'https://github.com/psa21git/Credit_Score',
-      demo: '#',
+      demo: 'https://credit-score-fh0k.onrender.com/',
     },
     {
       title: 'Air Quality Index Prediction Model',

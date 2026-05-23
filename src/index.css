@@ -2,38 +2,128 @@
 @variant dark (&:is(.dark *));
 
 @theme {
-  --color-primary: #0f172a;
-  --color-accent: #06b6d4;
+  --color-primary: #0b0c10;
+  --color-accent: #dc2626; /* Straw Hat Red */
+  --color-straw-gold: #eab308; /* Straw Hat Gold */
+  --color-manga-paper: #fbfbfd;
+  --color-manga-ink: #0d0d0f;
+  
+  --font-sans: 'Comic Neue', 'Inter', system-ui, -apple-system, sans-serif;
+  --font-manga: 'Bangers', sans-serif;
+  --font-marker: 'Permanent Marker', cursive;
+  --font-japanese: 'Mochiy Pop One', sans-serif;
 }
 
 body {
   margin: 0;
-  font-family: 'Inter', system-ui, -apple-system, sans-serif;
-  color: #0f172a;
-}
-.dark body {
-  color: #f8fafc;
+  font-family: 'Comic Neue', 'Inter', system-ui, sans-serif;
+  background-color: var(--color-manga-paper);
+  color: var(--color-manga-ink);
+  overflow-x: hidden;
+  transition: background-color 0.3s, color 0.3s;
 }
 
+.dark body {
+  background-color: var(--color-manga-ink);
+  color: var(--color-manga-paper);
+}
+
+/* Manga screentone halftone effect */
+.manga-halftone {
+  background-image: radial-gradient(rgba(0, 0, 0, 0.12) 15%, transparent 16%);
+  background-size: 8px 8px;
+}
+.dark .manga-halftone {
+  background-image: radial-gradient(rgba(255, 255, 255, 0.08) 15%, transparent 16%);
+  background-size: 8px 8px;
+}
+
+/* High contrast thick comic border */
+.manga-border {
+  border: 4px solid #000000;
+  box-shadow: 6px 6px 0px #000000;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.dark .manga-border {
+  border: 4px solid #ffffff;
+  box-shadow: 6px 6px 0px #ffffff;
+}
+
+.manga-border-hover:hover {
+  transform: translate(-3px, -3px);
+  box-shadow: 9px 9px 0px #000000;
+}
+.dark .manga-border-hover:hover {
+  box-shadow: 9px 9px 0px #ffffff;
+}
+
+.manga-card-skew {
+  transform: rotate(-0.5deg);
+}
+.manga-card-skew-even {
+  transform: rotate(0.5deg);
+}
+
+/* Wanted Poster Style details */
+.wanted-header {
+  font-family: 'Permanent Marker', cursive;
+  letter-spacing: 0.1em;
+}
+
+/* Manga speed lines background overlay */
+.speed-lines {
+  background: repeating-linear-gradient(
+    45deg,
+    rgba(0,0,0,0.03) 0px,
+    rgba(0,0,0,0.03) 1px,
+    transparent 1px,
+    transparent 10px
+  );
+}
+
+.dark .speed-lines {
+  background: repeating-linear-gradient(
+    45deg,
+    rgba(255,255,255,0.02) 0px,
+    rgba(255,255,255,0.02) 1px,
+    transparent 1px,
+    transparent 10px
+  );
+}
+
+/* Dynamic stroke outlines on headings */
+.stroke-manga {
+  -webkit-text-stroke: 1.5px #000000;
+  text-shadow: 3px 3px 0 #000000;
+}
+
+.dark .stroke-manga {
+  -webkit-text-stroke: 1.5px #ffffff;
+  text-shadow: 3px 3px 0 #000000;
+}
+
+/* Scrollbar customizing */
 ::-webkit-scrollbar {
-  width: 8px;
+  width: 12px;
+  height: 12px;
 }
 ::-webkit-scrollbar-track {
   background: #f1f5f9;
+  border-left: 3px solid #000000;
 }
 .dark ::-webkit-scrollbar-track {
-  background: #0f172a;
+  background: #0d0d0f;
+  border-left: 3px solid #ffffff;
 }
 ::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
-  border-radius: 4px;
+  background: #dc2626; /* straw hat red */
+  border: 3px solid #000000;
 }
 .dark ::-webkit-scrollbar-thumb {
-  background: #1e293b;
+  background: #dc2626;
+  border: 3px solid #ffffff;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #94a3b8;
-}
-.dark ::-webkit-scrollbar-thumb:hover {
-  background: #334155;
+  background: #eab308; /* gold */
 }

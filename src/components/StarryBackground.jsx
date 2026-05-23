@@ -17,98 +17,152 @@ const StarryBackground = () => {
     resizeCanvas();
     window.addEventListener('resize', resizeCanvas);
 
-    let mouse = { x: null, y: null };
+    let mouse = { x: null, y: null, lastX: null, lastY: null, speed: 0 };
 
     const handleMouseMove = (event) => {
+      if (mouse.x !== null) {
+        const dx = event.clientX - mouse.x;
+        const dy = event.clientY - mouse.y;
+        mouse.speed = Math.sqrt(dx * dx + dy * dy);
+      }
+      mouse.lastX = mouse.x;
+      mouse.lastY = mouse.y;
       mouse.x = event.clientX;
       mouse.y = event.clientY;
     };
-    
+
     window.addEventListener('mousemove', handleMouseMove);
-    window.addEventListener('mouseout', () => { mouse.x = null; mouse.y = null; });
+    window.addEventListener('mouseout', () => { mouse.x = null; mouse.y = null; mouse.speed = 0; });
 
-    const numStars = window.innerWidth > 768 ? 200 : 80;
-    let stars = [];
+    // Speed lines radiating from the center
+    const speedLines = [];
+    const maxLines = window.innerWidth > 768 ? 160 : 70;
+    
+    // Manga Sound Effects floating in the background
+    const sfxs = ['ドン!!', 'ゴゴゴ', 'ドドド', 'ニカッ', 'バァァァン', 'ドンッ!'];
+    const sfxParticles = [];
 
-    for (let i = 0; i < numStars; i++) {
-        stars.push({
-            x: Math.random() * canvas.width,
-            y: Math.random() * canvas.height,
-            origX: Math.random() * canvas.width,
-            origY: Math.random() * canvas.height,
-            radius: Math.random() * 1.5 + 0.5,
-            vx: (Math.random() - 0.5) * 0.2, 
-            vy: (Math.random() - 0.5) * 0.2,
-        });
+    const isDark = () => document.documentElement.classList.contains('dark');
+
+    // Initialize speed lines
+    for (let i = 0; i < maxLines; i++) {
+      speedLines.push({
+        angle: Math.random() * Math.PI * 2,
+        length: Math.random() * 120 + 40,
+        distance: Math.random() * Math.max(window.innerWidth, window.innerHeight),
+        speed: Math.random() * 6 + 2,
+        width: Math.random() * 1.5 + 0.5
+      });
+    }
+
+    // Initialize SFX particles
+    const numSFX = window.innerWidth > 768 ? 14 : 7;
+    for (let i = 0; i < numSFX; i++) {
+      sfxParticles.push({
+        x: Math.random() * window.innerWidth,
+        y: Math.random() * window.innerHeight,
+        text: sfxs[Math.floor(Math.random() * sfxs.length)],
+        fontSize: Math.random() * 22 + 18,
+        opacity: Math.random() * 0.15 + 0.05,
+        speedX: (Math.random() - 0.5) * 0.4,
+        speedY: (Math.random() - 0.5) * 0.4,
+        scale: Math.random() * 0.4 + 0.8,
+        rotate: (Math.random() - 0.5) * 0.4
+      });
     }
 
     const animate = () => {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
+      const dark = isDark();
+      const lineColor = dark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.04)';
+      const sfxColor = dark ? '255, 255, 255' : '15, 23, 42';
+      const accentSfxColor = '220, 38, 38'; // Red for Straw Hat action pops
       
-      const mouseActive = mouse.x !== null;
-      // We check if dark mode is active by looking at HTML class!
-      const isDark = document.documentElement.classList.contains('dark');
+      const centerX = canvas.width / 2;
+      const centerY = canvas.height / 2;
 
-      for (let i = 0; i < stars.length; i++) {
-        let star = stars[i];
-
-        star.origX += star.vx;
-        star.origY += star.vy;
+      // Draw Speed Lines
+      ctx.strokeStyle = lineColor;
+      for (let i = 0; i < speedLines.length; i++) {
+        let line = speedLines[i];
         
-        if (star.origX < -50) star.origX = canvas.width + 50;
-        if (star.origX > canvas.width + 50) star.origX = -50;
-        if (star.origY < -50) star.origY = canvas.height + 50;
-        if (star.origY > canvas.height + 50) star.origY = -50;
+        // Boost lines speed using mouse speed
+        const currentSpeed = line.speed * (1 + (mouse.speed * 0.03));
+        line.distance += currentSpeed;
 
-        let targetX = star.origX;
-        let targetY = star.origY;
-        
-        if (mouseActive) {
-            const dx = mouse.x - star.origX;
-            const dy = mouse.y - star.origY;
-            const distance = Math.sqrt(dx * dx + dy * dy);
-            
-            const radiusOfInfluence = 400; 
-            if (distance < radiusOfInfluence && distance > 0) {
-                const force = Math.pow(1 - distance / radiusOfInfluence, 1.5);
-                const pullStrength = force * 150; 
-                
-                const dirX = dx / distance;
-                const dirY = dy / distance;
-                
-                targetX = star.origX + dirX * pullStrength;
-                targetY = star.origY + dirY * pullStrength;
-            }
+        if (line.distance > Math.max(canvas.width, canvas.height)) {
+          line.distance = Math.random() * 50;
+          line.angle = Math.random() * Math.PI * 2;
         }
 
-        if (typeof star.x === 'undefined') {
-            star.x = star.origX;
-            star.y = star.origY;
-        }
-
-        star.x += (targetX - star.x) * 0.08;
-        star.y += (targetY - star.y) * 0.08;
+        const startX = centerX + Math.cos(line.angle) * line.distance;
+        const startY = centerY + Math.sin(line.angle) * line.distance;
+        const endX = centerX + Math.cos(line.angle) * (line.distance + line.length);
+        const endY = centerY + Math.sin(line.angle) * (line.distance + line.length);
 
         ctx.beginPath();
-        ctx.arc(star.x, star.y, star.radius, 0, Math.PI * 2);
+        ctx.lineWidth = line.width;
+        ctx.moveTo(startX, startY);
+        ctx.lineTo(endX, endY);
+        ctx.stroke();
+      }
+
+      // Decay mouse speed input
+      mouse.speed *= 0.96;
+
+      // Draw drifting SFX characters
+      for (let i = 0; i < sfxParticles.length; i++) {
+        let sfx = sfxParticles[i];
         
-        let opacity = 0.3 + (star.radius / 3);
-        if (mouseActive) {
-           const distToDisplay = Math.sqrt(Math.pow(mouse.x - star.x, 2) + Math.pow(mouse.y - star.y, 2));
-           if (distToDisplay < 400) {
-              opacity += (1 - distToDisplay / 400) * 0.4;
-           }
+        sfx.x += sfx.speedX * (1 + mouse.speed * 0.08);
+        sfx.y += sfx.speedY * (1 + mouse.speed * 0.08);
+
+        // Wrap boundaries
+        if (sfx.x < -100) sfx.x = canvas.width + 100;
+        if (sfx.x > canvas.width + 100) sfx.x = -100;
+        if (sfx.y < -100) sfx.y = canvas.height + 100;
+        if (sfx.y > canvas.height + 100) sfx.y = -100;
+
+        // Hover proximity effect
+        let isClose = false;
+        let dist = 9999;
+        if (mouse.x !== null) {
+          const dx = mouse.x - sfx.x;
+          const dy = mouse.y - sfx.y;
+          dist = Math.sqrt(dx * dx + dy * dy);
+          if (dist < 150) {
+            isClose = true;
+          }
         }
+
+        ctx.save();
+        ctx.translate(sfx.x, sfx.y);
+        ctx.rotate(sfx.rotate);
+
+        const currentOpacity = isClose 
+          ? Math.min(sfx.opacity + 0.5, 0.7) 
+          : sfx.opacity;
         
-        // Use dark dots on light mode, white stars on dark mode
-        if (isDark) {
-            ctx.fillStyle = `rgba(255, 255, 255, ${opacity})`;
+        const scaleVal = isClose 
+          ? sfx.scale * 1.35 
+          : sfx.scale;
+
+        ctx.scale(scaleVal, scaleVal);
+        // Style font with manga fonts
+        ctx.font = `italic bold ${sfx.fontSize}px 'Permanent Marker', 'Bangers', sans-serif`;
+        
+        if (isClose) {
+          ctx.fillStyle = `rgba(${accentSfxColor}, ${currentOpacity})`;
+          ctx.strokeStyle = dark ? '#ffffff' : '#000000';
+          ctx.lineWidth = 2;
+          ctx.fillText(sfx.text, 0, 0);
+          ctx.strokeText(sfx.text, 0, 0);
         } else {
-            ctx.fillStyle = `rgba(15, 23, 42, ${opacity * 0.8})`; // Slate-900 dots
+          ctx.fillStyle = `rgba(${sfxColor}, ${currentOpacity})`;
+          ctx.fillText(sfx.text, 0, 0);
         }
-        
-        ctx.fill();
-        ctx.closePath();
+
+        ctx.restore();
       }
 
       animationFrameId = requestAnimationFrame(animate);
